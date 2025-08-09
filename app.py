@@ -11,6 +11,9 @@ app = Flask(__name__,
   template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "views"),
   static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "public"))
 
+# Set env variables
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')  # Get the Stripe secret key
+
 # Home route
 @app.route('/', methods=['GET'])
 def index():
@@ -19,6 +22,7 @@ def index():
 # Checkout route
 @app.route('/checkout', methods=['GET'])
 def checkout():
+
   # Just hardcoding amounts here to avoid using a database
   item = request.args.get('item')
   title = None
@@ -37,13 +41,30 @@ def checkout():
   else:
     # Included in layout view, feel free to assign error
     error = 'No item selected'
+  
+  payment_intent = stripe.PaymentIntent.create(
+    amount=1099,
+    currency="usd",
+    automatic_payment_methods={"enabled": True},
+  )
 
-  return render_template('checkout.html', title=title, amount=amount, error=error)
+  public_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
+  print("Stripe Public Key:", public_key)  # This is your publishable key
+
+  return render_template('checkout.html', title=title, amount=amount, error=error, client_secret=payment_intent.client_secret, public_key=public_key)
 
 # Success route
 @app.route('/success', methods=['GET'])
 def success():
-  return render_template('success.html')
+  payment_intent_id = request.args.get('payment_intent')  # This comes from confirmPayment in frontend
+  payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)  # Retrieve the PaymentIntent
+  
+  amount_received = payment_intent['amount_received'] / 100  # Convert to dollars
+  currency = payment_intent['currency']
+  payment_status = payment_intent['status']
+    
+  return render_template('success.html', amount=amount_received, currency=currency, status=payment_status, payment_intent_id=payment_intent_id)
+
 
 
 if __name__ == '__main__':
