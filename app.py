@@ -43,15 +43,15 @@ def checkout():
     error = 'No item selected'
   
   payment_intent = stripe.PaymentIntent.create(
-    amount=1099,
-    currency="usd",
+    amount=amount,
+    currency="sgd",
     automatic_payment_methods={"enabled": True},
   )
 
   public_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
   print("Stripe Public Key:", public_key)  # This is your publishable key
 
-  return render_template('checkout.html', title=title, amount=amount, error=error, client_secret=payment_intent.client_secret, public_key=public_key)
+  return render_template('checkout.html', title=title, payment_intent_id=payment_intent.id, client_secret=payment_intent.client_secret, amount=payment_intent.amount, currency=payment_intent.currency, public_key=public_key, payment_status=payment_intent.status)
 
 # Success route
 @app.route('/success', methods=['GET'])
@@ -59,7 +59,7 @@ def success():
   payment_intent_id = request.args.get('payment_intent')  # This comes from confirmPayment in frontend
   payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)  # Retrieve the PaymentIntent
   
-  amount_received = payment_intent['amount_received'] / 100  # Convert to dollars
+  amount_received = '{:.2f}'.format(payment_intent['amount_received'] / 100)  # Convert to dollars and format with 2 decimal places
   currency = payment_intent['currency']
   payment_status = payment_intent['status']
     
