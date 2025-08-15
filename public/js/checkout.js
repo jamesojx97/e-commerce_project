@@ -34,17 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         },
     };
-    // Set up Stripe.js and Elements to use in checkout form, passing the client secret obtained
-    const elements = stripe.elements(options); // Initialize Elements
-    const paymentElement = elements.create('payment'); // Create the payment element
-    paymentElement.mount('#payment-element'); // Mount the payment element to the DOM
-
-    // Add a listener to detect the selected payment method
-    let selectedPaymentMethodType = 'card'; // Default to card
-    paymentElement.on('change', (event) => {
-        selectedPaymentMethodType = event.value.type;
-        console.log('Selected payment method:', selectedPaymentMethodType);
-    });
 
     // Define form variable here to ensure it exists
     const form = document.getElementById('payment-form');
@@ -57,6 +46,38 @@ document.addEventListener("DOMContentLoaded", function () {
             // button.disabled = false; // Re-enable button on error
         }
     };
+
+    const button = form.querySelector('button[type="submit"]');
+    // Initially disable the button
+    button.disabled = true;
+    
+    // Set up Stripe.js and Elements to use in checkout form, passing the client secret obtained
+    const elements = stripe.elements(options); // Initialize Elements
+    const paymentElement = elements.create('payment'); // Create the payment element
+    paymentElement.mount('#payment-element'); // Mount the payment element to the DOM
+
+    // Add a listener to detect the selected payment method
+    let selectedPaymentMethodType = 'card'; // Default to card
+    paymentElement.on('change', (event) => {
+        selectedPaymentMethodType = event.value.type;
+        console.log('Selected payment method:', selectedPaymentMethodType);
+        // Check if the payment fields are complete and valid
+        if (event.complete) {
+            button.disabled = false; // Enable the button
+        } else {
+            button.disabled = true; // Disable the button
+        }
+        // Show any validation errors from Stripe Elements
+        if (event.error) {
+            handleError(event.error);
+        } else {
+            // Clear any existing error messages if the input is now valid
+            const messageContainer = document.querySelector('#error-message');
+            if (messageContainer) {
+                messageContainer.textContent = "";
+            }
+        }
+    });
 
     if (form) {
         form.addEventListener('submit', async (event) => {
