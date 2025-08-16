@@ -4,9 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const stripe = Stripe(stripePublicKey);
     const options = {
-        clientSecret: client_secret,
-        // Customize with Appearance API.
-        appearance: {
+        layout: {
+            type: 'tabs',
+            defaultCollapsed: false,
+        }
+    }
+    // Customize with Appearance API.
+    const appearance = {
             theme: 'stripe',
             variables: {
                 colorPrimary: '#0570de',
@@ -32,8 +36,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(19, 46, 73, 0.02), 0 0 0 2px var(--colorPrimary)',
                 },
             }
-        },
     };
+
+    const option = { mode: 'shipping' };
+    var elements = stripe.elements({
+        clientSecret: client_secret,
+        appearance: appearance
+    });
+    // Create Address Element
+    const addressElement = elements.create('address', option);
+    addressElement.mount('#address-element');
+
+    // Create Payment Element
+    const paymentElement = elements.create('payment', options);
+    paymentElement.mount('#payment-element'); 
+
+    // Create Link Authentication Element
+    const linkAuthenticationElement =  elements.create('linkAuthentication') 
+    linkAuthenticationElement.mount("#link-authentication-element"); 
+
 
     // Define form variable here to ensure it exists
     const form = document.getElementById('payment-form');
@@ -47,26 +68,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    const button = form.querySelector('button[type="submit"]');
-    // Initially disable the button
-    button.disabled = true;
-    
-    // Set up Stripe.js and Elements to use in checkout form, passing the client secret obtained
-    const elements = stripe.elements(options); // Initialize Elements
-    const paymentElement = elements.create('payment'); // Create the payment element
-    paymentElement.mount('#payment-element'); // Mount the payment element to the DOM
+    let addressComplete = false;
+    let paymentComplete = false;
 
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+
+    // Function to check the form's completeness and enable the button.
+    function updateButtonState(){
+        button.disabled = !(addressComplete && paymentComplete);
+    };
+    
     // Add a listener to detect the selected payment method
     let selectedPaymentMethodType = 'card'; // Default to card
     paymentElement.on('change', (event) => {
         selectedPaymentMethodType = event.value.type;
         console.log('Selected payment method:', selectedPaymentMethodType);
-        // Check if the payment fields are complete and valid
-        if (event.complete) {
-            button.disabled = false; // Enable the button
-        } else {
-            button.disabled = true; // Disable the button
-        }
+
+        paymentComplete = event.complete; // 'complete' is true if the payment details are valid
+        updateButtonState();
         // Show any validation errors from Stripe Elements
         if (event.error) {
             handleError(event.error);
@@ -75,7 +95,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const messageContainer = document.querySelector('#error-message');
             if (messageContainer) {
                 messageContainer.textContent = "";
-            }
+        }
+        }
+    });
+
+    addressElement.on('change', (event) => {
+        addressComplete = event.complete; // 'complete' is true if all required fields are filled and valid
+        updateButtonState();
+        if (event.error) {
+            handleError(event.error);
         }
     });
 
@@ -93,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const successUrl = `/success?payment_intent=${payment_intent_id}&amount=${amount}&currency=${currency}&status=${payment_status}`
-            if (selectedPaymentMethodType === 'card') {
+            if (selectedPaymentMethodType === 'card' || 'link') {
                 // Confirm Payment Intent with Card
                 try {
                     const { error } = await stripe.confirmPayment({

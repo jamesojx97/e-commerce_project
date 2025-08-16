@@ -45,7 +45,7 @@ def checkout():
   payment_intent = stripe.PaymentIntent.create(
     amount=amount,
     currency="sgd",
-    automatic_payment_methods={"enabled": True},
+    payment_method_types = ["card", "grabpay", "alipay", "link"]
   )
 
   public_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
