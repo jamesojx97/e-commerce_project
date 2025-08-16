@@ -60,7 +60,9 @@ The application is structured as a Flask project:
 
 ### Approach
 
-I considered what the merchant integrating Stripe may require in terms of their checkout flow and the business logic necessary. This is why I chose to show local Payment Methods such as Alipay and GrabPay in addition to cards. This payment flow follows the integration design - **Accept a Payment** where the payment intent is created during the checkout flow prior to collection of payment details. Error handling such as prevention of multiple submissions and submitting card payment details without valid expiration dates or CVC formats has been included. 
+I considered what the merchant integrating Stripe may require in terms of their checkout flow and the business logic necessary. This is why I chose to show Digital Wallets such as Alipay and GrabPay in addition to cards. I also wanted to demonstrate how easy it is to for a new user to set up Link and for an existing user to use Link for their checkout. Moreover, since the merchant is an online book store, collecting a delivery address would be important to faciliate their order fulfillment.
+
+This payment flow follows the integration design - **Accept a Payment** where the payment intent is created during the checkout flow prior to collection of payment details. Error handling such as prevention of multiple submissions and submitting card payment details without valid expiration dates or CVC formats has been included. 
 
 ### Documentation
 
@@ -70,6 +72,9 @@ I considered what the merchant integrating Stripe may require in terms of their 
 - [Confirm Alipay Payment](https://docs.stripe.com/js/payment_intents/confirm_alipay_payment)
 - [Create Payment Intent API](https://docs.stripe.com/api/payment_intents/create)
 - [Retrieve Payment Intent API](https://docs.stripe.com/api/payment_intents/retrieve)
+- [Link Authentication Element](https://docs.stripe.com/payments/elements/link-authentication-element)
+- [Address Element](https://docs.stripe.com/elements/address-element)
+- [Listening for changes on Address Elemnt](https://docs.stripe.com/elements/address-element/collect-addresses#web-retrieve-address)
 - [Jinja Templating](https://jinja.palletsprojects.com/en/stable/templates/)
 - [Jinja Templating Primer](https://realpython.com/primer-on-jinja-templating/)
 - [Flask Documentation](https://flask.palletsprojects.com/en/stable/)
