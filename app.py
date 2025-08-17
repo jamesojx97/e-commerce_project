@@ -51,7 +51,7 @@ def checkout():
   public_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
   print("Stripe Public Key:", public_key)  # This is your publishable key
 
-  return render_template('checkout.html', title=title, payment_intent_id=payment_intent.id, client_secret=payment_intent.client_secret, amount=payment_intent.amount, currency=payment_intent.currency, public_key=public_key, payment_status=payment_intent.status)
+  return render_template('checkout.html', title=title, payment_intent_id=payment_intent.id, client_secret=payment_intent.client_secret, amount=payment_intent.amount, currency=payment_intent.currency, public_key=public_key)
 
 # Success route
 @app.route('/success', methods=['GET'])

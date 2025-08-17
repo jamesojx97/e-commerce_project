@@ -70,13 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let addressComplete = false;
     let paymentComplete = false;
+    let emailComplete = false;
 
     const button = form.querySelector('button[type="submit"]');
     button.disabled = true;
 
     // Function to check the form's completeness and enable the button.
     function updateButtonState(){
-        button.disabled = !(addressComplete && paymentComplete);
+        button.disabled = !(addressComplete && paymentComplete && emailComplete);
     };
     
     // Add a listener to detect the selected payment method
@@ -107,6 +108,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    linkAuthenticationElement.on('change', (event) => {
+        emailComplete = event.complete; // 'complete' is true if all required fields are filled and valid
+        updateButtonState();
+        if (event.error) {
+            handleError(event.error);
+        }
+    });
+
     if (form) {
         form.addEventListener('submit', async (event) => {
             event.preventDefault(); // Prevent form from submitting normally
@@ -120,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return; // Early exit on error
             }
 
-            const successUrl = `/success?payment_intent=${payment_intent_id}&amount=${amount}&currency=${currency}&status=${payment_status}`
+            const successUrl = `/success?payment_intent=${payment_intent_id}&amount=${amount}&currency=${currency}}`
             if (selectedPaymentMethodType === 'card' || 'link') {
                 // Confirm Payment Intent with Card
                 try {
