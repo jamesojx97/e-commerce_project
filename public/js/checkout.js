@@ -60,11 +60,25 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById('payment-form');
     const handleError = (error) => {
         const messageContainer = document.querySelector('#error-message');
-        if (messageContainer) {
-            messageContainer.textContent = error.message; // Display the error message
-            // Note: The 'button' variable is not in scope here.
-            // You might need to pass it or define it in a higher scope.
-            // button.disabled = false; // Re-enable button on error
+        if (messageContainer){
+            let userMessage = 'An unexpected error occurred. Please try again.';
+            let retryLink = '';
+            // Check if the error message contains the specific phrase
+            // Extract the specific error message from the raw response
+            if (error.message) {
+                const parts = error.message.split(': ');
+                if (parts.length > 1) {
+                    userMessage = parts[1];
+                } else {
+                    userMessage = error.message;
+                }
+            }
+            // Add a custom message for card-related errors
+            if (userMessage.includes('card has insufficient funds') || userMessage.includes('card was declined')) {
+                userMessage = userMessage + '. Please try with another card.';
+                retryLink = `<a href="/" class="btn btn-primary mt-2">Make another purchase</a>`;
+            }
+            messageContainer.innerHTML = `<div class="alert alert-danger" role="alert"><strong>${userMessage}</strong>${retryLink}</div>`;
         }
     };
 
@@ -130,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const successUrl = `/success?payment_intent=${payment_intent_id}&amount=${amount}&currency=${currency}}`
-            if (selectedPaymentMethodType === 'card' || 'link') {
+            if (selectedPaymentMethodType === 'card' || selectedPaymentMethodType === 'link') {
                 // Confirm Payment Intent with Card
                 try {
                     const { error } = await stripe.confirmPayment({

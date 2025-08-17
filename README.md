@@ -9,7 +9,7 @@ This demo is written in Python with the [Flask framework](https://flask.palletsp
 To get started, clone the repository and run pip3 to install dependencies:
 
 ```
-git clone https://github.com/jamesojx97/e-commerce_project_extended
+git clone https://github.com/jamesojx97/e-commerce_project
 cd sa-takehome-project-python
 pip3 install -r requirements.txt
 ```
